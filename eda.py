@@ -1,3 +1,10 @@
+'''
+Oppotunities for more eda
+- look for correlations with stopwords
+- fix sentiment issues or correlate to ratings in another way
+- explore drug and conditions vs rating
+'''
+
 from datasets import load_dataset
 import pandas as pd
 from typing import Optional, Union, List
