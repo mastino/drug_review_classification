@@ -215,7 +215,7 @@ def sweep_hyperparameters(X_train, X_test, y_train, y_test):
     for n_est in n_estimators_li:
         for min_samp in min_samples_li:
 
-            report = run_model(X_train, X_test, y_train, y_test, n_est = n_est, min_samp = min_samp, print=False)
+            report = run_model(X_train, X_test, y_train, y_test, n_est = n_est, min_samp = min_samp, print_report=False)
             accuracy_li[acc_count] = report['accuracy']
             acc_count += 1
 
@@ -229,7 +229,7 @@ def sweep_hyperparameters(X_train, X_test, y_train, y_test):
         print()
     plot_grid(n_estimators_line, min_samples_line, accuracy_li)
 
-def run_model(X_train, X_test, y_train, y_test, n_est = 100, min_samp = 5, print=False): 
+def run_model(X_train, X_test, y_train, y_test, n_est = 100, min_samp = 5, print_report=False): 
     model = RandomForestClassifier(n_estimators=n_est, min_samples_split=min_samp, random_state=42)
 
     print(f"training and testing n estimators={n_est} min_samples={min_samp}....")
@@ -247,8 +247,10 @@ def run_model(X_train, X_test, y_train, y_test, n_est = 100, min_samp = 5, print
     print(f"  train time: {train_time:.4f}s")
     print(f"  test time:  {test_time:.4f}s")
     report = classification_report(y_test, predictions, output_dict=True)
-    if print:
+    if print_report:
         print(report)
+
+    return report
 
 
 if __name__ == "__main__":
@@ -299,7 +301,7 @@ if __name__ == "__main__":
     elif args.operation == 'sweep_hyperparameters':
         sweep_hyperparameters(X_train, X_test, y_train, y_test)
     elif args.operation == 'run_model':
-        run_model(X_train, X_test, y_train, y_test, print_full=True)
+        run_model(X_train, X_test, y_train, y_test, print_report=True)
     else:
         print("oops I don't know what you want")
 
