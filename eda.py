@@ -81,21 +81,19 @@ def get_plots_of_lengths(df):
     plt.hist(df['rating'], bins=10, label='ratings', color='blue')
     plt.show()
     plt.hist(df['review_length'], bins=50, label='lengths', color='blue')
+    plt.xscale('log')
     plt.show()
     
-    plt.hist(df[df["rating"] < 3]['review_length'], bins=50, alpha=0.5, label='low', color='blue')
-    plt.hist(df[df["rating"] >= 7]['review_length'], bins=50, alpha=0.5, label='high', color='red')
-    plt.show()
-
-    plt.hist(df[df["rating"] < 3]['symbol_count'], bins=50, alpha=0.5, label='low', color='blue')
-    plt.hist(df[df["rating"] >= 7]['symbol_count'], bins=50, alpha=0.5, label='high', color='red')
-    plt.show()
-
-    plt.hist(df[df["rating"] < 3]['letter_count'], bins=50, alpha=0.5, label='low', color='blue')
-    plt.hist(df[df["rating"] >= 7]['letter_count'], bins=50, alpha=0.5, label='high', color='red')
+    fig, ax = plt.subplots(3)
+    ax[0].hist(df[df["rating"] < 3]['review_length'], bins=50, alpha=0.5, label='low', color='blue')
+    ax[0].hist(df[df["rating"] >= 7]['review_length'], bins=50, alpha=0.5, label='high', color='red')
+    ax[1].hist(df[df["rating"] < 3]['symbol_count'], bins=50, alpha=0.5, label='low', color='blue')
+    ax[1].hist(df[df["rating"] >= 7]['symbol_count'], bins=50, alpha=0.5, label='high', color='red')
+    ax[2].hist(df[df["rating"] < 3]['letter_count'], bins=50, alpha=0.5, label='low', color='blue')
+    ax[2].hist(df[df["rating"] >= 7]['letter_count'], bins=50, alpha=0.5, label='high', color='red')
     plt.show()
     
-    df.plot.scatter(x= "review_length", y="rating", logx=True)
+    plt.scatter(df["review_length"], df["rating"], color='blue')
     plt.show()
 
 def count_letters(text):
@@ -112,7 +110,7 @@ def count_sym(text):
             count += 1
     return count
 
-def get_counts_of_characters(df):
+def get_counts_of_characters(df, print_info=False):
     """
     count characters of different types of characters
     
@@ -120,18 +118,22 @@ def get_counts_of_characters(df):
         df (dataframe): dataframe to get plot made of
         
     Result:
-       show plot on screens
+       smodifies and returns dataframe
     """
 
     df['letter_count'] = df['review'].apply(count_letters)
     df['symbol_count'] = df['review'].apply(count_sym)
-    print("Added word count:")
-    print(df[['review', 'letter_count', 'symbol_count']].head())
+    if print_info:
+        print("Added word count:")
+        print(df[['review', 'letter_count', 'symbol_count']].head())
+    
+    return df
 
 def calculate_sentiment(df):
     '''
     Use the nltk to get sentiment analysis
-    Unfortunately pandas is not working as expected.
+    
+    modifies and returns df
     '''
 
     # Initialize the VADER sentiment intensity analyzer
@@ -139,28 +141,26 @@ def calculate_sentiment(df):
 
     # Get polarity scores
     sentiment_scores = df['review'].apply(analyzer.polarity_scores).to_dict()
-    print(sentiment_scores[0].keys())
     sent_df=pd.DataFrame(sentiment_scores.values(),index=sentiment_scores.keys())
-    print(sent_df.head())
-    df = pd.concat([df, sent_df])
+    df = pd.concat([df, sent_df], axis=1)
+
+    return df
+
+
+def plot_sentiment(df):
+    print(df.head())
     plt.hist(df["pos"], bins=50, label='pos', alpha=0.9, color='blue')
     plt.hist(df["neu"], bins=50, label='neu', alpha=0.5, color='yellow')
     plt.hist(df["neg"], bins=50, label='neg', alpha=0.5, color='red')
     plt.show()
 
-    plt.hist(df[df["rating"] < 3]['pos'], bins=50, alpha=0.5, label='low', color='blue')
-    plt.hist(df[df["rating"] >= 7]['pos'], bins=50, alpha=0.5, label='high', color='red')
+    fig, ax = plt.subplots(3)
+    ax[0].scatter(df["rating"], df["pos"], color='blue')
+    ax[1].scatter(df["rating"], df["neu"], color='yellow')
+    ax[2].scatter(df["rating"], df["neg"], color='red')
+    fig.suptitle('Scatter of pos (blue) neu (yellow), and neg (red)')
     plt.show()
 
-    plt.hist(df[df["rating"] < 3]['neu'], bins=50, alpha=0.5, label='low', color='blue')
-    plt.hist(df[df["rating"] >= 7]['neu'], bins=50, alpha=0.5, label='high', color='red')
-    plt.show()
-
-    plt.hist(df[df["rating"] < 3]['neg'], bins=50, alpha=0.5, label='low', color='blue')
-    plt.hist(df[df["rating"] >= 7]['neg'], bins=50, alpha=0.5, label='high', color='red')
-    plt.show()
-
-    print(df.head())
 
 # Example usage
 if __name__ == "__main__":
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     print(f"Columns: {df.columns.tolist()}")
     print(df.head())
         
-    # get_counts_of_characters(df)
-    # get_plots_of_lengths(df)
-    calculate_sentiment(df)
+    get_counts_of_characters(df)
+    get_plots_of_lengths(df)
+    # calculate_sentiment(df)
 
